@@ -3,11 +3,11 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { PDFDownloadLink, BlobProvider } from "@react-pdf/renderer";
+import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
 import CoverPageForm from "@/components/CoverPageForm";
 import CoverPagePDF from "@/components/CoverPagePDF";
 import ThemeSelector from "@/components/ThemeSelector";
-import { FaFileDownload, FaFileAlt, FaHistory, FaEye } from "react-icons/fa";
+import { FaFileDownload, FaFileAlt, FaHistory } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Head from "next/head";
 
@@ -32,7 +32,7 @@ export default function Home() {
   const [theme, setTheme] = useState<"modern" | "elegant" | "professional" | "formal" | "classic" | undefined>("classic");
   const [showPreview, setShowPreview] = useState(false);
   const [previewData, setPreviewData] = useState(formData);
-  const [forceRender, setForceRender] = useState(0); // Add a counter to force re-renders
+  // No need for forceRender state anymore
   const [isLoading, setIsLoading] = useState(true);
   // Mobile detection no longer needed as we're using the same approach for all devices
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -81,19 +81,28 @@ export default function Home() {
     setTheme(selectedTheme);
   };
 
-  const generatePDF = () => {
-    // First hide the preview
-    setShowPreview(false);
-    setPdfUrl(null);
-
-    // Force a complete re-render of PDF components by incrementing the counter
-    setForceRender(prev => prev + 1);
-
-    // Then update the preview data and show it again after a delay
-    setTimeout(() => {
-      setPreviewData({...formData});
+  const generatePDF = async () => {
+    try {
+      // Show loading state
       setShowPreview(true);
-    }, 100);
+      setPdfUrl(null);
+
+      // Create a deep copy of the form data to avoid reference issues
+      const formDataCopy = JSON.parse(JSON.stringify(formData));
+      setPreviewData(formDataCopy);
+
+      // Generate the PDF blob using react-pdf
+      const pdfDoc = <CoverPagePDF data={formDataCopy} theme={theme} />;
+      const blob = await pdf(pdfDoc).toBlob();
+
+      // Create a URL from the blob
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
+    } catch (error) {
+      console.error('Error generating PDF preview:', error);
+      // Show an error message to the user
+      alert('There was an error generating the PDF preview. Please try again.');
+    }
   };
 
   // const clearSavedData = () => {
@@ -216,52 +225,37 @@ export default function Home() {
                 className="flex flex-col gap-4"
               >
                 <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden shadow-md p-4 flex flex-col items-center justify-center">
-                  {pdfUrl ? (
-                    <div className="w-full h-[600px] flex flex-col items-center">
+                  <div className="w-full h-[600px] flex flex-col items-center">
+                    {pdfUrl ? (
                       <iframe
                         src={pdfUrl}
                         className="w-full h-full border-0"
                         title="PDF Preview"
                       />
-                    </div>
-                  ) : (
-                    <div className="py-10 flex flex-col items-center">
-                      <p className="text-gray-500 mb-4 text-center">PDF preview is ready to view</p>
-                      <BlobProvider key={`pdf-blob-${forceRender}`} document={<CoverPagePDF data={previewData} theme={theme} />}>
-                        {({ url, loading, error }) => {
-                          if (loading) return 'Loading document...';
-                          if (error) return `Error: ${error}`;
-                          if (url) {
-                            return (
-                              <button
-                                onClick={() => setPdfUrl(url)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
-                              >
-                                <FaEye /> View PDF Preview
-                              </button>
-                            );
-                          }
-                          return null;
-                        }}
-                      </BlobProvider>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center">
+                        <p className="text-gray-500 text-center">Click &quot;Generate PDF&quot; to see preview</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex gap-4">
-                  <PDFDownloadLink
-                    key={`pdf-download-${forceRender}`}
-                    document={<CoverPagePDF data={previewData} theme={theme} />}
-                    fileName={`${previewData.type.toLowerCase()}_cover_page.pdf`}
-                    className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium py-3 px-4 rounded-md transition-colors text-center shadow-md flex items-center justify-center gap-2"
-                  >
-                    {({ loading }) => loading ? 'Preparing document...' : (
-                      <>
-                        <FaFileDownload />
-                        Download PDF
-                      </>
-                    )}
-                  </PDFDownloadLink>
+                  {/* Only render the download link when preview is ready */}
+                  {pdfUrl && (
+                    <PDFDownloadLink
+                      document={<CoverPagePDF data={previewData} theme={theme} />}
+                      fileName={`${previewData.type.toLowerCase()}_cover_page.pdf`}
+                      className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium py-3 px-4 rounded-md transition-colors text-center shadow-md flex items-center justify-center gap-2"
+                    >
+                      {({ loading }) => loading ? 'Preparing document...' : (
+                        <>
+                          <FaFileDownload />
+                          Download PDF
+                        </>
+                      )}
+                    </PDFDownloadLink>
+                  )}
 
                   {/* <motion.button
                     whileHover={{ scale: 1.05 }}
