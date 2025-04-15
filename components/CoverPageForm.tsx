@@ -1,7 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 
-const CoverPageForm = ({ formData, onChange }) => {
-  const handleChange = (e) => {
+interface CoverPageFormProps {
+  formData: {
+    type: string;
+    courseCode: string;
+    courseTitle: string;
+    topic: string;
+    teacherName: string;
+    designation: string;
+    teacherDepartment: string;
+    studentName: string;
+    studentId: string;
+    section: string;
+    studentDepartment: string;
+    submissionDate: string;
+  };
+  onChange: (updatedFormData: Record<string, string>) => void;
+}
+
+const CoverPageForm: React.FC<CoverPageFormProps> = ({ formData, onChange }) => {
+  const handleChange = (e : any) => {
     const { name, value } = e.target;
     onChange({ ...formData, [name]: value });
   };
@@ -75,7 +94,7 @@ const CoverPageForm = ({ formData, onChange }) => {
         <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Teacher Information</h3>
         <div className="space-y-6">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Teacher's Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Teacher&apos;s Name</label>
             <input
               type="text"
               name="teacherName"

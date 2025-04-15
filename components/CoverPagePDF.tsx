@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { Document, Page, Text, View, StyleSheet, Image, Font, Svg, Path } from "@react-pdf/renderer";
 
@@ -23,7 +24,7 @@ Font.register({
 Font.register({
   family: "Open Sans",
   src: "https://cdn.jsdelivr.net/npm/open-sans-all@0.1.3/fonts/open-sans-800.ttf",
-  fontWeight: 'extrabold'
+  fontWeight: 'bold'
 });
 
 const themeStyles = {
@@ -90,7 +91,7 @@ const themeStyles = {
 
 // SVG Icons without backgrounds
 const Icons = {
-  course: (color) => (
+  course: (color : any) => (
     <Svg width={22} height={22} viewBox="0 0 24 24">
       <Path 
         d="M12 2L2 7L12 12L22 7L12 2Z" 
@@ -118,7 +119,7 @@ const Icons = {
       />
     </Svg>
   ),
-  teacher: (color) => (
+  teacher: (color : any) => (
     <Svg width={22} height={22} viewBox="0 0 24 24">
       <Path 
         d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" 
@@ -138,7 +139,7 @@ const Icons = {
       />
     </Svg>
   ),
-  student: (color) => (
+  student: (color : any) => (
     <Svg width={22} height={22} viewBox="0 0 24 24">
       <Path 
         d="M12 15C15.866 15 19 11.866 19 8C19 4.13401 15.866 1 12 1C8.13401 1 5 4.13401 5 8C5 11.866 8.13401 15 12 15Z" 
@@ -158,7 +159,7 @@ const Icons = {
       />
     </Svg>
   ),
-  date: (color) => (
+  date: (color : any) => (
     <Svg width={22} height={22} viewBox="0 0 24 24">
       <Path 
         d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" 
@@ -194,7 +195,7 @@ const Icons = {
       />
     </Svg>
   ),
-  university: (color) => (
+  university: (color : any) => (
     <Svg width={22} height={22} viewBox="0 0 24 24">
       <Path 
         d="M2 22H22" 
@@ -240,7 +241,22 @@ const Icons = {
   )
 };
 
-const CoverPagePDF = ({ data, theme = "classic" }) => {
+interface CoverPageData {
+  type: string;
+  courseCode: string;
+  courseTitle: string;
+  topic: string;
+  teacherName: string;
+  designation: string;
+  teacherDepartment: string;
+  studentName: string;
+  studentId: string;
+  section: string;
+  studentDepartment: string;
+  submissionDate: string;
+}
+
+const CoverPagePDF = ({ data, theme = "classic" }: { data: CoverPageData; theme?: keyof typeof themeStyles }) => {
   const currentTheme = themeStyles[theme];
 
   const styles = StyleSheet.create({
@@ -374,7 +390,7 @@ const CoverPagePDF = ({ data, theme = "classic" }) => {
     }
   });
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString:any) => {
     if (!dateString) return "";
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -445,7 +461,7 @@ const CoverPagePDF = ({ data, theme = "classic" }) => {
               
               <View style={styles.row}>
                 <View style={styles.labelContainer}>
-                  <Text style={styles.label}>Teacher's Name:</Text>
+                  <Text style={styles.label}>Teacher&apos;s Name:</Text>
                 </View>
                 <Text style={styles.value}>{data.teacherName}</Text>
               </View>

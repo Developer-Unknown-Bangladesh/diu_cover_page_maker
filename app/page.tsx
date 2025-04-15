@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from "react";
@@ -6,7 +7,7 @@ import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import CoverPageForm from "@/components/CoverPageForm";
 import CoverPagePDF from "@/components/CoverPagePDF";
 import ThemeSelector from "@/components/ThemeSelector";
-import { FaFileDownload, FaPrint, FaFileAlt, FaPalette, FaHistory, FaTrash } from "react-icons/fa";
+import { FaFileDownload, FaFileAlt, FaHistory } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Head from "next/head";
 
@@ -26,7 +27,7 @@ export default function Home() {
     submissionDate: "",
   });
 
-  const [theme, setTheme] = useState("classic");
+  const [theme, setTheme] = useState<"modern" | "elegant" | "professional" | "formal" | "classic" | undefined>("classic");
   const [showPreview, setShowPreview] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -40,8 +41,8 @@ export default function Home() {
       setFormData(JSON.parse(savedFormData));
     }
     
-    if (savedTheme) {
-      setTheme(savedTheme);
+    if (savedTheme && ["modern", "elegant", "professional", "formal", "classic"].includes(savedTheme)) {
+      setTheme(savedTheme as "modern" | "elegant" | "professional" | "formal" | "classic");
     }
     
     setIsLoading(false);
@@ -51,15 +52,15 @@ export default function Home() {
   useEffect(() => {
     if (!isLoading) {
       localStorage.setItem('coverPageFormData', JSON.stringify(formData));
-      localStorage.setItem('coverPageTheme', theme);
+      localStorage.setItem('coverPageTheme', theme || '');
     }
   }, [formData, theme, isLoading]);
 
-  const handleFormChange = (data) => {
+  const handleFormChange = (data : any) => {
     setFormData(data);
   };
 
-  const handleThemeChange = (selectedTheme) => {
+  const handleThemeChange = (selectedTheme : any) => {
     setTheme(selectedTheme);
   };
 
@@ -67,26 +68,26 @@ export default function Home() {
     setShowPreview(true);
   };
 
-  const clearSavedData = () => {
-    localStorage.removeItem('coverPageFormData');
-    localStorage.removeItem('coverPageTheme');
-    setFormData({
-      type: "Assignment",
-      courseCode: "",
-      courseTitle: "",
-      topic: "",
-      teacherName: "",
-      designation: "",
-      teacherDepartment: "",
-      studentName: "",
-      studentId: "",
-      section: "",
-      studentDepartment: "",
-      submissionDate: "",
-    });
-    setTheme("classic");
-    setShowPreview(false);
-  };
+  // const clearSavedData = () => {
+  //   localStorage.removeItem('coverPageFormData');
+  //   localStorage.removeItem('coverPageTheme');
+  //   setFormData({
+  //     type: "Assignment",
+  //     courseCode: "",
+  //     courseTitle: "",
+  //     topic: "",
+  //     teacherName: "",
+  //     designation: "",
+  //     teacherDepartment: "",
+  //     studentName: "",
+  //     studentId: "",
+  //     section: "",
+  //     studentDepartment: "",
+  //     submissionDate: "",
+  //   });
+  //   setTheme("classic");
+  //   setShowPreview(false);
+  // };
 
   return (
     <>
@@ -184,7 +185,7 @@ export default function Home() {
               <div className="flex items-center gap-3 mt-4">
                 {/* <FaPalette className="text-indigo-600 text-xl" />
                 <h3 className="text-sm font-semibold text-gray-800 dark:text-white mr-2">Theme:</h3> */}
-                <ThemeSelector onSelect={handleThemeChange} selectedTheme={theme} />
+                <ThemeSelector onSelect={handleThemeChange} selectedTheme={theme || ''} />
               </div>
             </div>
             
@@ -233,7 +234,7 @@ export default function Home() {
               >
                 <FaFileAlt className="text-gray-400 text-5xl mb-4" />
                 <p className="text-gray-500 dark:text-gray-400 text-center mb-2">
-                  Fill out the form and click "Generate Cover Page" to see a preview here
+                  Fill out the form and click &quot;Generate Cover Page&quot; to see a preview here
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 text-center max-w-md px-4">
                   Your cover page will be formatted according to DIU standards with your selected theme

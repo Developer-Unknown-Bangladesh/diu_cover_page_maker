@@ -44,7 +44,12 @@ const themes = [
   },
 ];
 
-const ThemeSelector = ({ onSelect, selectedTheme }) => {
+interface ThemeSelectorProps {
+  onSelect: (themeId: string) => void;
+  selectedTheme: string;
+}
+
+const ThemeSelector: React.FC<ThemeSelectorProps> = ({ onSelect, selectedTheme }) => {
   return (
     <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
       {themes.map((theme) => (
