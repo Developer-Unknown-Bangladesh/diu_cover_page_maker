@@ -111,7 +111,7 @@ export default function Home() {
               <h1 className="text-xl md:text-2xl font-bold">DIU Cover Page Generator</h1>
             </div>
             
-            {!isLoading && Object.values(formData).some(value => value !== "" && value !== "Assignment") && (
+            {/* {!isLoading && Object.values(formData).some(value => value !== "" && value !== "Assignment") && (
               <motion.button
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -121,7 +121,7 @@ export default function Home() {
               >
                 <FaTrash /> Clear Saved Data
               </motion.button>
-            )}
+            )} */}
           </div>
         </header>
 
@@ -158,14 +158,6 @@ export default function Home() {
               onChange={handleFormChange} 
             />
             
-            <div className="mt-8">
-              <div className="flex items-center gap-3 mb-4">
-                <FaPalette className="text-indigo-600 text-xl" />
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Select Theme</h3>
-              </div>
-              <ThemeSelector onSelect={handleThemeChange} selectedTheme={theme} />
-            </div>
-            
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -183,10 +175,18 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 border border-gray-200 dark:border-gray-700"
           >
-            <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center gap-3">
-              <FaFileAlt className="text-indigo-600" />
-              Preview
-            </h2>
+            <div className="flex flex-col items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
+                <FaFileAlt className="text-indigo-600" />
+                Preview
+              </h2>
+              
+              <div className="flex items-center gap-3 mt-4">
+                {/* <FaPalette className="text-indigo-600 text-xl" />
+                <h3 className="text-sm font-semibold text-gray-800 dark:text-white mr-2">Theme:</h3> */}
+                <ThemeSelector onSelect={handleThemeChange} selectedTheme={theme} />
+              </div>
+            </div>
             
             {showPreview ? (
               <motion.div 
@@ -214,7 +214,7 @@ export default function Home() {
                     )}
                   </PDFDownloadLink>
                   
-                  <motion.button
+                  {/* <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => window.print()}
@@ -222,7 +222,7 @@ export default function Home() {
                   >
                     <FaPrint />
                     Print
-                  </motion.button>
+                  </motion.button> */}
                 </div>
               </motion.div>
             ) : (

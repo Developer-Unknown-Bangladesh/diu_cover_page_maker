@@ -46,22 +46,21 @@ const themes = [
 
 const ThemeSelector = ({ onSelect, selectedTheme }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
       {themes.map((theme) => (
         <button
           key={theme.id}
           onClick={() => onSelect(theme.id)}
-          className={`p-4 rounded-lg border transition-all transform hover:scale-105 hover:shadow-md ${
+          className={`p-2 rounded-lg border transition-all transform hover:scale-105 hover:shadow-md ${
             selectedTheme === theme.id
               ? "border-blue-500 ring-2 ring-blue-200 shadow-md"
               : `${theme.border} dark:border-gray-700`
           }`}
         >
-          <div className={`h-16 w-full rounded-md ${theme.color} ${theme.border} mb-3 flex items-center justify-center`}>
-            <div className="text-2xl">{theme.icon}</div>
+          <div className={`h-8 w-full rounded-md ${theme.color} ${theme.border} mb-3 flex items-center justify-center`}>
+            <div className="text-xl">{theme.icon}</div>
           </div>
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{theme.name}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{theme.description}</p>
+          <p className="text-xs font-medium text-gray-700 dark:text-gray-300">{theme.name}</p>
         </button>
       ))}
     </div>
