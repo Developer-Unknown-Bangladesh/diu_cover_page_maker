@@ -3,11 +3,11 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
+import { PDFDownloadLink, BlobProvider } from "@react-pdf/renderer";
 import CoverPageForm from "@/components/CoverPageForm";
 import CoverPagePDF from "@/components/CoverPagePDF";
 import ThemeSelector from "@/components/ThemeSelector";
-import { FaFileDownload, FaFileAlt, FaHistory } from "react-icons/fa";
+import { FaFileDownload, FaFileAlt, FaHistory, FaEye } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Head from "next/head";
 
@@ -17,6 +17,7 @@ export default function Home() {
     courseCode: "",
     courseTitle: "",
     topic: "",
+    experimentNo: "",
     teacherName: "",
     designation: "",
     teacherDepartment: "",
@@ -25,26 +26,40 @@ export default function Home() {
     section: "",
     studentDepartment: "",
     submissionDate: "",
+    titleExperiments: [],
   });
 
   const [theme, setTheme] = useState<"modern" | "elegant" | "professional" | "formal" | "classic" | undefined>("classic");
   const [showPreview, setShowPreview] = useState(false);
+  const [previewData, setPreviewData] = useState(formData);
+  const [forceRender, setForceRender] = useState(0); // Add a counter to force re-renders
   const [isLoading, setIsLoading] = useState(true);
+  // Mobile detection no longer needed as we're using the same approach for all devices
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   // Load saved data from localStorage on component mount
   useEffect(() => {
     setIsLoading(true);
     const savedFormData = localStorage.getItem('coverPageFormData');
     const savedTheme = localStorage.getItem('coverPageTheme');
-    
+
     if (savedFormData) {
-      setFormData(JSON.parse(savedFormData));
+      const parsedData = JSON.parse(savedFormData);
+      // Ensure titleExperiments exists
+      if (!parsedData.titleExperiments) {
+        parsedData.titleExperiments = [];
+      }
+      // Ensure experimentNo exists
+      if (!parsedData.experimentNo) {
+        parsedData.experimentNo = "";
+      }
+      setFormData(parsedData);
     }
-    
+
     if (savedTheme && ["modern", "elegant", "professional", "formal", "classic"].includes(savedTheme)) {
       setTheme(savedTheme as "modern" | "elegant" | "professional" | "formal" | "classic");
     }
-    
+
     setIsLoading(false);
   }, []);
 
@@ -57,15 +72,28 @@ export default function Home() {
   }, [formData, theme, isLoading]);
 
   const handleFormChange = (data : any) => {
+    // Just update the form data, don't affect the preview
     setFormData(data);
   };
 
   const handleThemeChange = (selectedTheme : any) => {
+    // Just update the theme, don't affect the preview
     setTheme(selectedTheme);
   };
 
   const generatePDF = () => {
-    setShowPreview(true);
+    // First hide the preview
+    setShowPreview(false);
+    setPdfUrl(null);
+
+    // Force a complete re-render of PDF components by incrementing the counter
+    setForceRender(prev => prev + 1);
+
+    // Then update the preview data and show it again after a delay
+    setTimeout(() => {
+      setPreviewData({...formData});
+      setShowPreview(true);
+    }, 100);
   };
 
   // const clearSavedData = () => {
@@ -96,7 +124,7 @@ export default function Home() {
         <meta name="description" content="Generate professional cover pages for assignments and lab reports for Daffodil International University students." />
         <meta name="keywords" content="DIU, cover page, assignment, lab report, Daffodil International University" />
       </Head>
-      
+
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <header className="bg-gradient-to-r from-blue-600 to-indigo-700 shadow-lg py-4 text-white">
           <div className="container mx-auto px-4 flex items-center justify-between">
@@ -111,7 +139,7 @@ export default function Home() {
               />
               <h1 className="text-xl md:text-2xl font-bold">DIU Cover Page Generator</h1>
             </div>
-            
+
             {/* {!isLoading && Object.values(formData).some(value => value !== "" && value !== "Assignment") && (
               <motion.button
                 initial={{ opacity: 0 }}
@@ -127,7 +155,7 @@ export default function Home() {
         </header>
 
         <main className="container mx-auto px-4 py-8 grid md:grid-cols-2 gap-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -137,9 +165,9 @@ export default function Home() {
               <FaFileAlt className="text-blue-600 text-2xl" />
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Create Your Cover Page</h2>
             </div>
-            
+
             {!isLoading && Object.values(formData).some(value => value !== "" && value !== "Assignment") && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-md border border-blue-200 dark:border-blue-800"
@@ -153,24 +181,16 @@ export default function Home() {
                 </p>
               </motion.div>
             )}
-            
-            <CoverPageForm 
-              formData={formData} 
-              onChange={handleFormChange} 
+
+            <CoverPageForm
+              formData={formData}
+              onChange={handleFormChange}
             />
-            
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={generatePDF}
-              className="mt-8 w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-medium py-3 px-4 rounded-md transition-colors shadow-md flex items-center justify-center gap-2"
-            >
-              <FaFileAlt />
-              Generate Cover Page
-            </motion.button>
+
+            {/* Generate button moved to fixed position at bottom */}
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -181,30 +201,58 @@ export default function Home() {
                 <FaFileAlt className="text-indigo-600" />
                 Preview
               </h2>
-              
+
               <div className="flex items-center gap-3 mt-4">
                 {/* <FaPalette className="text-indigo-600 text-xl" />
                 <h3 className="text-sm font-semibold text-gray-800 dark:text-white mr-2">Theme:</h3> */}
                 <ThemeSelector onSelect={handleThemeChange} selectedTheme={theme || ''} />
               </div>
             </div>
-            
+
             {showPreview ? (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="flex flex-col gap-4"
               >
-                <div className="h-[600px] border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden shadow-md">
-                  <PDFViewer width="100%" height="100%" className="border-0">
-                    <CoverPagePDF data={formData} theme={theme} />
-                  </PDFViewer>
+                <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden shadow-md p-4 flex flex-col items-center justify-center">
+                  {pdfUrl ? (
+                    <div className="w-full h-[600px] flex flex-col items-center">
+                      <iframe
+                        src={pdfUrl}
+                        className="w-full h-full border-0"
+                        title="PDF Preview"
+                      />
+                    </div>
+                  ) : (
+                    <div className="py-10 flex flex-col items-center">
+                      <p className="text-gray-500 mb-4 text-center">PDF preview is ready to view</p>
+                      <BlobProvider key={`pdf-blob-${forceRender}`} document={<CoverPagePDF data={previewData} theme={theme} />}>
+                        {({ url, loading, error }) => {
+                          if (loading) return 'Loading document...';
+                          if (error) return `Error: ${error}`;
+                          if (url) {
+                            return (
+                              <button
+                                onClick={() => setPdfUrl(url)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
+                              >
+                                <FaEye /> View PDF Preview
+                              </button>
+                            );
+                          }
+                          return null;
+                        }}
+                      </BlobProvider>
+                    </div>
+                  )}
                 </div>
-                
+
                 <div className="flex gap-4">
-                  <PDFDownloadLink 
-                    document={<CoverPagePDF data={formData} theme={theme} />} 
-                    fileName={`${formData.type.toLowerCase()}_cover_page.pdf`}
+                  <PDFDownloadLink
+                    key={`pdf-download-${forceRender}`}
+                    document={<CoverPagePDF data={previewData} theme={theme} />}
+                    fileName={`${previewData.type.toLowerCase()}_cover_page.pdf`}
                     className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium py-3 px-4 rounded-md transition-colors text-center shadow-md flex items-center justify-center gap-2"
                   >
                     {({ loading }) => loading ? 'Preparing document...' : (
@@ -214,7 +262,7 @@ export default function Home() {
                       </>
                     )}
                   </PDFDownloadLink>
-                  
+
                   {/* <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -227,7 +275,7 @@ export default function Home() {
                 </div>
               </motion.div>
             ) : (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="h-[600px] flex flex-col items-center justify-center border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900"
@@ -243,13 +291,31 @@ export default function Home() {
             )}
           </motion.div>
         </main>
-        
+
         <footer className="bg-gradient-to-r from-gray-800 to-gray-900 shadow-inner py-6 mt-8 text-white">
           <div className="container mx-auto px-4 text-center">
             <p>© {new Date().getFullYear()} DIU Cover Page Generator. All rights reserved.</p>
             <p className="text-sm text-gray-400 mt-2">Created for Daffodil International University students</p>
           </div>
         </footer>
+
+        {/* Fixed Generate Button */}
+        <motion.div
+          className="fixed bottom-6 left-0 right-0 flex justify-center z-50"
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={generatePDF}
+            className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold py-4 px-8 rounded-full shadow-lg flex items-center justify-center gap-2 w-64"
+          >
+            <FaFileAlt size={20} />
+            Generate PDF
+          </motion.button>
+        </motion.div>
       </div>
     </>
   );
