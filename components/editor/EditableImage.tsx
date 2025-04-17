@@ -2,6 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaTrash, FaExchangeAlt } from 'react-icons/fa';
 import Image from 'next/image';
 
+interface ImageUpdate {
+  position?: { x: number; y: number };
+  size?: { width: number; height: number };
+  src?: string;
+}
+
 interface EditableImageProps {
   id: string;
   src: string;
@@ -9,11 +15,12 @@ interface EditableImageProps {
   initialY: number;
   initialWidth: number;
   initialHeight: number;
-  onUpdate: (id: string, updates: any) => void;
+  onUpdate: (id: string, updates: ImageUpdate) => void;
   onDelete: (id: string) => void;
   isSelected?: boolean;
   onSelect?: () => void;
   zIndex?: number;
+  onDragStateChange?: (isDragging: boolean) => void;
 }
 
 const EditableImage: React.FC<EditableImageProps> = ({
@@ -27,7 +34,8 @@ const EditableImage: React.FC<EditableImageProps> = ({
   onDelete,
   isSelected = false,
   onSelect,
-  zIndex = 1
+  zIndex = 1,
+  onDragStateChange
 }) => {
   const [position, setPosition] = useState({ x: initialX, y: initialY });
   const [size, setSize] = useState({ width: initialWidth, height: initialHeight });
@@ -39,14 +47,6 @@ const EditableImage: React.FC<EditableImageProps> = ({
     // Update parent component when properties change
     onUpdate(id, { position, size, src: imageSrc });
   }, [id, position, size, imageSrc, onUpdate]);
-
-  const handleDrag = (_e: any, data: any) => {
-    setPosition({ x: data.x, y: data.y });
-  };
-
-  const handleResize = (_e: any, { size }: any) => {
-    setSize({ width: size.width, height: size.height });
-  };
 
   const handleDelete = () => {
     onDelete(id);
@@ -78,6 +78,7 @@ const EditableImage: React.FC<EditableImageProps> = ({
     
     if (e.target instanceof HTMLElement && e.target.closest('.drag-handle')) {
       setIsDragging(true);
+      if (onDragStateChange) onDragStateChange(true);
       setDragStart({
         x: e.clientX - position.x,
         y: e.clientY - position.y
@@ -97,8 +98,9 @@ const EditableImage: React.FC<EditableImageProps> = ({
 
   // Use useCallback for the mouseup handler too
   const handleMouseUp = React.useCallback(() => {
+    if (isDragging && onDragStateChange) onDragStateChange(false);
     setIsDragging(false);
-  }, []);
+  }, [isDragging, onDragStateChange]);
 
   useEffect(() => {
     if (isDragging) {
@@ -151,7 +153,8 @@ const EditableImage: React.FC<EditableImageProps> = ({
       style={{
         left: position.x,
         top: position.y,
-        zIndex
+        zIndex,
+        transition: isDragging ? 'none' : 'transform 0.1s ease-out'
       }}
       onMouseDown={handleMouseDown}
       onMouseEnter={() => setIsHovered(true)}
